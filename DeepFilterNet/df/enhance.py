@@ -188,7 +188,7 @@ def init_df(
 
 
 def df_features(audio: Tensor, df: DF, nb_df: int, device=None) -> Tuple[Tensor, Tensor, Tensor]:
-    spec = df.analysis(audio.numpy())  # [C, Tf] -> [C, Tf, F]
+    spec = df.analysis(audio.numpy(force=True))  # [C, Tf] -> [C, Tf, F]
     a = get_norm_alpha(False)
     erb_fb = df.erb_widths()
     with warnings.catch_warnings():
@@ -238,7 +238,7 @@ def enhance(
     if atten_lim_db is not None and abs(atten_lim_db) > 0:
         lim = 10 ** (-abs(atten_lim_db) / 20)
         enhanced = as_complex(spec.squeeze(1).cpu()) * lim + enhanced * (1 - lim)
-    audio = torch.as_tensor(df_state.synthesis(enhanced.numpy()))
+    audio = torch.as_tensor(df_state.synthesis(enhanced.numpy(force=True)))
     if pad:
         # The frame size is equal to p.hop_size. Given a new frame, the STFT loop requires e.g.
         # ceil((n_fft-hop)/hop). I.e. for 50% overlap, then hop=n_fft//2
